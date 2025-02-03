@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import JSConfetti from 'js-confetti'
 
 function App() {
@@ -8,8 +8,11 @@ function App() {
   const [agrandar, setAgrandar] = useState(45)
   const [valueSi, setValueSi] = useState(false)
   const [intentos, setIntentos] = useState(0)
+  
+  // Referencia para el audio
+  const audioRef = useRef(new Audio("./audio.mp3"));
 
-  // Reemplaza esta URL con tu webhook de Discord
+  // Usar la variable de entorno
   const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL
 
   const notificarRespuesta = async (aceptoAlPrimero) => {
@@ -20,9 +23,13 @@ function App() {
 
       const data = {
         content: mensaje,
-        // Puedes personalizar el nombre y avatar del bot
         username: "Bot San Valentín",
         avatar_url: "https://i.imgur.com/4M34hi2.png"
+      }
+
+      if (!DISCORD_WEBHOOK_URL) {
+        console.error("URL del webhook no configurada")
+        return
       }
 
       await fetch(DISCORD_WEBHOOK_URL, {
@@ -36,6 +43,27 @@ function App() {
       console.error("Error al enviar notificación:", error)
     }
   }
+
+  const handleSi = async () => {
+    setValueSi(true)
+    
+    // Reproducir música
+    try {
+      audioRef.current.volume = 0.8; // Ajusta el volumen al 50%
+      await audioRef.current.play();
+    } catch (error) {
+      console.error("Error al reproducir audio:", error);
+    }
+
+    jsConfetti.addConfetti({
+      emojis: ['😍', '🥰', '❤️', '😘'],
+      emojiSize: 70,
+      confettiNumber: 80,
+    })
+    
+    await notificarRespuesta(intentos === 0)
+  }
+
 
   let random = [{
     id: 1,
@@ -94,7 +122,6 @@ function App() {
     img: "https://media.tenor.com/I7KdFaMzUq4AAAAi/peach-goma.gif"
   }]
 
- 
   const randomResponse = () => {
     let index = Math.floor(Math.random() * 11);
     console.log(random[index])
@@ -102,25 +129,11 @@ function App() {
       setAgrandar(agrandar + 10)
     }
     setRandomValor(random[index]);
-    setIntentos(prev => prev + 1); // Incrementamos el contador de intentos
+    setIntentos(prev => prev + 1);
   }
 
   const handleImageLoad = () => {
     setImagenCargada(true);
-  }
-
-
-  // Aquí está la función handleSi que faltaba
-  const handleSi = async () => {
-    setValueSi(true)
-    jsConfetti.addConfetti({
-      emojis: ['😍', '🥰', '❤️', '😘'],
-      emojiSize: 70,
-      confettiNumber: 80,
-    })
-    
-    // Notificar la respuesta a Discord
-    await notificarRespuesta(intentos === 0)
   }
 
   return (
@@ -136,6 +149,7 @@ function App() {
             className="mx-auto" 
             width={400} 
             height={400} 
+            onLoad={handleImageLoad}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 mt-10 gap-5 items-center">
             <button 

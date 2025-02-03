@@ -10,7 +10,7 @@ function App() {
   const [intentos, setIntentos] = useState(0)
   
   // Referencia para el audio
-  const audioRef = useRef(new Audio("./audio.mp3"));
+  const audioRef = useRef(new Audio("/audio.mp3"));
 
   // Usar la variable de entorno
   const DISCORD_WEBHOOK_URL = import.meta.env.VITE_DISCORD_WEBHOOK_URL
@@ -49,7 +49,7 @@ function App() {
     
     // Reproducir música
     try {
-      audioRef.current.volume = 0.8; // Ajusta el volumen al 50%
+      audioRef.current.volume = 0.8;
       await audioRef.current.play();
     } catch (error) {
       console.error("Error al reproducir audio:", error);
@@ -64,6 +64,18 @@ function App() {
     await notificarRespuesta(intentos === 0)
   }
 
+  const randomResponse = () => {
+    let index = Math.floor(Math.random() * random.length); // Corregido para usar el tamaño real del array
+    if (agrandar <= 500) {
+      setAgrandar(agrandar + 10)
+    }
+    setRandomValor(random[index]);
+    setIntentos(prev => prev + 1); // Incrementar intentos
+  }
+
+  const handleImageLoad = () => {
+    setImagenCargada(true);
+  }
 
   let random = [{
     id: 1,
@@ -122,20 +134,6 @@ function App() {
     img: "https://media.tenor.com/I7KdFaMzUq4AAAAi/peach-goma.gif"
   }]
 
-  const randomResponse = () => {
-    let index = Math.floor(Math.random() * 11);
-    console.log(random[index])
-    if (agrandar <= 500) {
-      setAgrandar(agrandar + 10)
-    }
-    setRandomValor(random[index]);
-    setIntentos(prev => prev + 1);
-  }
-
-  const handleImageLoad = () => {
-    setImagenCargada(true);
-  }
-
   return (
     <main id="canvas" className="fondo w-screen h-screen bg-no-repeat bg-cover flex items-center justify-center bg-center">
       {!valueSi ? (
@@ -162,7 +160,6 @@ function App() {
             <button
               className="bg-red-500 text-white font-bold p-2 rounded-md text-xl"
               onClick={randomResponse}
-              disabled={imagenCargada}
             >
               {Object.keys(randomValor).length === 0 ? "No" : randomValor.description}
             </button>
